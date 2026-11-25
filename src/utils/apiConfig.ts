@@ -1,14 +1,23 @@
 /**
  * Laravel backend (SpaaLita_backend) connection settings.
  *
- * VITE_API_BASE_URL - API root, e.g. http://localhost:5000/api/
+ * Production builds (`npm run build`) always use the production API, so a
+ * local .env can never end up in a deployed site.
+ *
+ * `npm run dev` only:
+ * VITE_API_BASE_URL - API root, e.g. http://localhost:5000/api/ for a local backend
+ *                     (start-server.bat). Unset: the production API.
  * VITE_API_URL      - optional: host that serves uploaded files (/uploads/...).
  *                     Defaults to VITE_API_BASE_URL without the trailing /api.
  */
-export const API_BASE_URL: string = 'https://backend.spaalita.intellimanagement.com/api/';
+const PRODUCTION_API_BASE_URL = 'https://backend.spaalita.intellimanagement.com/api/';
+
+const devOverride = (value?: string): string | undefined => (import.meta.env.DEV && value?.trim()) || undefined;
+
+export const API_BASE_URL: string = devOverride(import.meta.env.VITE_API_BASE_URL) || PRODUCTION_API_BASE_URL;
 
 export const API_ORIGIN: string = (
-    import.meta.env.VITE_API_URL || API_BASE_URL.replace(/\/api\/?$/, '')
+    devOverride(import.meta.env.VITE_API_URL) || API_BASE_URL.replace(/\/api\/?$/, '')
 ).replace(/\/+$/, '');
 
 /**

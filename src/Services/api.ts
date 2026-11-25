@@ -62,8 +62,10 @@ const responseBody = (response: AxiosResponse<ApiResponse>) => response.data;
 /**
  * Failed-call result for the service functions: the backend's
  * {"success": false, "message": "..."} body, or a fallback message.
+ * Other fields of the body are kept (e.g. checkout's `code` and `cart`).
  */
 export const toErrorResult = (error: any, fallback: string): ApiResponse => ({
+  ...(error?.response?.data && typeof error.response.data === 'object' ? error.response.data : {}),
   success: false,
   status: error?.response?.status,
   message: error?.response?.data?.message || error?.message || fallback,

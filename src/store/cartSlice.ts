@@ -94,9 +94,38 @@ const cartSlice = createSlice({
 
         clearLastAddedItem: (state) => {
             state.lastAddedItem = null;
+        },
+
+        /**
+         * Take the prices and coupon discount the backend priced the cart with
+         * (checkout's CART_CHANGED response), so the customer sees, and then
+         * pays, the amount that will actually be charged.
+         */
+        syncCartWithCheckout: (state, action: PayloadAction<CheckoutCart>) => {
+            for (const line of action.payload.items) {
+                const item = state.items.find(item => item.id === line.productId);
+                if (item) {
+                    item.price = line.price;
+                    item.name = line.name || item.name;
+                }
+            }
+
+            const coupon = action.payload.coupon;
+            state.appliedCoupon = coupon?.couponCode;
+            state.discountAmount = coupon?.discountAmount ?? 0;
+            state.freeShippingAmount = coupon?.freeShippingAmount ?? 0;
+            state.totalAfterDiscount = coupon?.totalAfterDiscount ?? action.payload.totalAmount;
         }
     }
 });
+
+/** The cart as priced by the backend at checkout */
+export interface CheckoutCart {
+    items: { productId: string; name: string; price: number; qty: number }[];
+    subtotal: number;
+    coupon: { couponCode: string; discountAmount: number; freeShippingAmount: number; totalAfterDiscount: number } | null;
+    totalAmount: number;
+}
 
 export const {
     addToCart,
@@ -105,7 +134,8 @@ export const {
     applyCouponToCart,
     removeCoupon,
     clearCart,
-    clearLastAddedItem
+    clearLastAddedItem,
+    syncCartWithCheckout
 } = cartSlice.actions;
 
 export default cartSlice.reducer;

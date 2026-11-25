@@ -1,8 +1,10 @@
 import type { ChangeEvent, FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
 import { contactSubmit } from '../../Services/ContactServices';
 import { CONTACT_INFO } from '../../utils/constants';
+import { openTidioChat, useTidioReady } from '../../utils/tidio';
 
 declare global {
     interface Window {
@@ -35,6 +37,7 @@ const ContactSection = ({ topPadding, normalFont }: ContactSectionProps) => {
     const [formData, setFormData] = useState(EMPTY_FORM);
     const [recaptchaError, setRecaptchaError] = useState('');
     const [submitting, setSubmitting] = useState(false);
+    const chatReady = useTidioReady();
 
     useEffect(() => {
         if (!RECAPTCHA_SITE_KEY) {
@@ -139,6 +142,17 @@ const ContactSection = ({ topPadding, normalFont }: ContactSectionProps) => {
                             <h6 className="">{CONTACT_INFO.PHONE}</h6>
                         ) : (
                             <h3 style={{fontWeight:480}}>{CONTACT_INFO.PHONE}</h3>
+                        )}
+                        {/* Hidden when the chat widget could not load (e.g. blocked by an ad blocker) */}
+                        {chatReady && (
+                            <button
+                                type="button"
+                                className="d-inline-flex align-items-center gap-2 mt-4"
+                                onClick={openTidioChat}
+                            >
+                                <ChatBubbleOutlineIcon fontSize="small" />
+                                Chat with us
+                            </button>
                         )}
                     </div>
                 </div>
